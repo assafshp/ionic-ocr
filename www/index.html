@@ -33,9 +33,42 @@
 
         <img style="width: 100%;" id="pic" src="">
 
+        <!-- <div class="list" ng-repeat="result in results" ng-if="results">
+        {{ result }}
+        </div> -->
+
+        <ion-list show-delete="false"
+          show-reorder="false"
+          can-swipe="true" ng-if="results">
+          
+          <div class="item item-divider">Your results:</div>
+          <ion-item ng-repeat="result in results" ng-if="results" >
+            <!-- {{$index + 1}} - {{result | filter:customArrayFilter}} -->
+            {{$index + 1}} - {{result}}
+             <ion-option-button class="button-assertive" ng-click="edit(item)">
+              Edit
+            </ion-option-button>
+            <ion-delete-button class="ion-minus-circled" ng-click="items.splice($index, 1)">
+            </ion-delete-button>
+          </ion-item>
+        </ion-list>
+
+        <div class="padding" ng-if="results">
+        <div class="item item-divider">Chose round and check win:</div>
+          <ion-item >
+            <label class="item item-input" ion-item>
+                <input type="number" placeholder="2766" />
+            </label>
+          </ion-item>
+          <button ng-click="checkWin()" class="button button-full button-positive">
+            Check Winning 
+          </button>
+          
+        </div>
+
         <div class="padding" ng-if="showAnalyzeButton">
 
-            <button ng-click="testOcrad()" class="button button-full button-positive">
+            <button ng-click="analyzeText()" class="button button-full button-positive">
               Analyze text
             </button>
             <button ng-click="showActionSheet()" class="button button-full button-positive">

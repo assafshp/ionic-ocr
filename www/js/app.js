@@ -18,7 +18,7 @@ angular.module('starter', ['ionic','ngCordova'])
   });
 })
 
-.controller('CaptureCtrl', function($scope, $window,CameraSrv,$ionicActionSheet, $ionicLoading, $ionicPlatform, $cordovaCamera) {
+.controller('CaptureCtrl', function($scope, $window, TextSrv,CameraSrv,$ionicActionSheet, $ionicLoading, $ionicPlatform, $cordovaCamera) {
 
   $ionicPlatform.ready(function() {
 
@@ -79,7 +79,28 @@ angular.module('starter', ['ionic','ngCordova'])
       console.log(text);
       alert(text);
     });
-  } ; 
+  };
+
+  // $scope.customArrayFilter = function (item) {
+  //   console.log(item);
+  //   return ('*'+item +'*');
+  // };
+
+  $scope.analyzeText = function(){
+    self.showLoading();
+    TextSrv.analyze(document.getElementById("pic")).then(function(text){
+      $ionicLoading.hide();
+      self.hideLoading();
+      // console.log(text);
+      // alert(text);
+      $scope.results = text;
+    }).catch(function(err){
+      console.log('ERR:', err);
+      self.hideLoading();
+      alert('Error , try again later');
+    });
+
+  }; 
 
 })
 
@@ -153,4 +174,150 @@ angular.module('starter', ['ionic','ngCordova'])
     }
   };
 
+}])
+
+.service('TextSrv', [ '$q','$http', function($q, $http){
+
+  var TextSrv={};
+
+  TextSrv.getNumbers = function(text){
+    var finalResults=[];
+    var j=0;
+    var rows = text.split('\n');
+    var results=new Array(10);
+    angular.forEach(rows, function(value, index) {
+      var tableResults = [];
+      if (value[value.length-1] === ')'){
+        var id = value.substr(value.indexOf(')')-1,1);
+        id = id === '0' ? 10 : id;
+        results[id-1] = value.substr(0, value.indexOf(id+')')-1);
+        
+        var tmpResults = results[id-1].split(' ');
+        var strong;
+        angular.forEach(tmpResults, function(val,i){
+          if (angular.isNumber(parseInt(val)) && val.length===2){
+            tableResults.push(val);
+          }
+          else{
+            if (angular.isNumber(parseInt(val)) && val.length===1){
+              strong=val;
+            }
+          }
+        });
+        tableResults.push(strong);
+        console.log(tableResults);
+
+      }
+      if (tableResults.length>0){
+        finalResults.push(tableResults);
+      }
+      //finalResults.push(tableResults[tableResults.length-1]);
+    });
+    return finalResults;
+
+  };
+
+  TextSrv.analyze = function(img){
+    var deferred = $q.defer();
+
+    var data={
+      "requests": 
+          [
+        {
+          "image": 
+          {
+            
+              "content":img.currentSrc.substr(img.currentSrc.indexOf('base64,')+7,img.currentSrc.length)
+              
+          },
+          "features": 
+          [
+            {
+              "maxResults": 1,
+              "type": "TEXT_DETECTION"
+            }
+          ]
+        }
+      ]
+    };
+    var url='https://vision.googleapis.com/v1/images:annotate?key=';
+    var key='AIzaSyDvEpus69g4_MoJr39sosKeYfJKkNG_SfI';
+
+    $http.post(url + key,data,{ headers: {
+         'Content-Type': 'application/json'}})
+    .then(function(res){
+      var description = res.data.responses[0].textAnnotations[0].description;
+      console.log('RES:' ,description);
+      
+      deferred.resolve(TextSrv.getNumbers(description));
+    }, function(err){
+      console.log('ERR in submitStats:', err);
+      deferred.reject(err);
+    });
+
+    return deferred.promise;
+
+  };
+
+  return TextSrv;
+
+}])
+
+.service('WinSrv', [ '$q','$http', function($q, $http){
+
+  var WinSrv={};
+
+  WinSrv.getWinning = function(round){
+    // var mock = { 
+    //   number:2765,
+    //   date: '16/02/16',
+    //   results : [ '8','14','16','20','24','30','1']
+    // };
+    var mock = { 
+      number:2765,
+      date: '14/02/16',
+      results : [ '37','28','25','12','9','1','6']
+    };
+    if (round){
+      return $q.when(mock)
+    }
+
+  }
+
+  WinSrv.checkWining= function(results,round){
+    var selected;
+    if (round){
+      WinSrv.getWinning(round).then(function(res){
+
+      }).catch(function(err){
+        alert('Error getting winning results');
+      });
+
+
+    }
+    else{
+
+    }
+  };
+
+
+  return WinSrv;
+
+}])
+
+.filter('formatArray', ['OptionalInjection', function(OptionalInjection) {
+  return function(value) {
+    if (!angular.isArray(value)) return '';
+    return value.map(OptionalInjection.formatter).join(', ');  // or just return value.join(', ');
+  };
+
+
+
+
 }]);
+
+
+
+
+
+
