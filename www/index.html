@@ -54,13 +54,13 @@
         </ion-list>
 
         <div class="padding" ng-if="results">
-        <div class="item item-divider">Chose round and check win:</div>
+        <div class="item item-divider">Choose round and check win:</div>
           <ion-item >
             <label class="item item-input" ion-item>
-                <input type="number" placeholder="2766" />
+                <input type="number" placeholder="{{roundNumber}}" />
             </label>
           </ion-item>
-          <button ng-click="checkWin()" class="button button-full button-positive">
+          <button ng-click="checkWining(results,roundNumber)" class="button button-full button-positive">
             Check Winning 
           </button>
           

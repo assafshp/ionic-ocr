@@ -18,11 +18,14 @@ angular.module('starter', ['ionic','ngCordova'])
   });
 })
 
-.controller('CaptureCtrl', function($scope, $window, TextSrv,CameraSrv,$ionicActionSheet, $ionicLoading, $ionicPlatform, $cordovaCamera) {
+.controller('CaptureCtrl', function($scope, $window, WinSrv, TextSrv,CameraSrv,$ionicActionSheet, $ionicLoading, $ionicPlatform, $cordovaCamera) {
 
   $ionicPlatform.ready(function() {
 
     $scope.showAnalyzeButton = false;
+    $scope.roundNumber=2665;
+
+
 
     var self = this;
 
@@ -51,7 +54,27 @@ angular.module('starter', ['ionic','ngCordova'])
 
   });
 
-  
+  $scope.checkWining = function(results,roundNumber){
+    var isWin = false;
+    WinSrv.checkWining(results,roundNumber).then(function(res){
+      angular.forEach(res,function(score){
+        if (score.isWinning){
+          isWin=true;
+        }
+      });
+
+      if (isWin){
+        alert('WIN !!!!!');
+      }
+      else{
+        alert('No luck this time, try again !');
+      }
+
+    }).catch(function(err){
+      alert('error');
+    });
+
+  };
 
   $scope.showActionSheet = function(){
     var hideSheet = $ionicActionSheet.show({
@@ -268,38 +291,89 @@ angular.module('starter', ['ionic','ngCordova'])
   var WinSrv={};
 
   WinSrv.getWinning = function(round){
-    // var mock = { 
-    //   number:2765,
-    //   date: '16/02/16',
-    //   results : [ '8','14','16','20','24','30','1']
-    // };
     var mock = { 
       number:2765,
-      date: '14/02/16',
-      results : [ '37','28','25','12','9','1','6']
+      date: '16/02/16',
+      results : [ '8','14','16','20','24','30','1']
     };
+    // var mock = { 
+    //   number:2765,
+    //   date: '14/02/16',
+    //   results : [ '37','28','25','12','09','01','6']
+    // };
     if (round){
-      return $q.when(mock)
+      return $q.when(mock);
+    }
+    else{
+      return $q.when(mock);
     }
 
   }
 
   WinSrv.checkWining= function(results,round){
+    var deferred = $q.defer();
     var selected;
-    if (round){
-      WinSrv.getWinning(round).then(function(res){
-
-      }).catch(function(err){
-        alert('Error getting winning results');
-      });
+    WinSrv.getWinning(round).then(function(winResultObj){
+      var final = checkResults(results, winResultObj.results);
+      deferred.resolve(final);
 
 
-    }
-    else{
 
-    }
+    }).catch(function(err){
+      deferred.reject(err);
+      alert('Error getting winning results');
+    });
+
+    return deferred.promise;
   };
 
+
+  function checkResults(results,winResult){
+    var resArr = [];
+    angular.forEach(results,function(result,index){
+      resArr.push(checkResult(result,winResult));
+    });
+    return resArr;
+  };
+
+  function checkResult(result,winResult){
+    var resultObj={};
+    var strongResult = result[result.length-1];
+    var strongWinResult = winResult[winResult.length-1];
+
+    resultObj.strongResult = strongResult;
+    resultObj.strongWinResult = strongWinResult;
+    resultObj.result = result;
+    resultObj.winResult = winResult;
+    resultObj.isWinStrong = strongWinResult === strongResult ? true : false;
+    resultObj.matchNumbers = [];
+    resultObj.isWinning = false;
+    resultObj.allCorrectNumbers = false;
+
+    var winResultObj = {};
+    angular.forEach(winResult,function(num,i){
+      if (i< winResult.length-1){
+        winResultObj[num] = true;
+      }
+    });
+    console.log(winResultObj);
+
+    var countMatch=0;
+    angular.forEach(result, function(number, index){
+      if (winResultObj.hasOwnProperty(number)){
+        countMatch=countMatch+1;
+        resultObj.matchNumbers.push(number);
+      }
+    });
+    if (countMatch===6){
+      resultObj.allCorrectNumbers=true;
+      if (resultObj.isWinStrong){
+        resultObj.isWinning = true;
+      }
+    }
+    return resultObj;
+
+  };
 
   return WinSrv;
 
