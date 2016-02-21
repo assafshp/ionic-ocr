@@ -27,7 +27,7 @@
 
     <ion-pane>
       <ion-header-bar class="bar-stable">
-        <h1 class="title">Ionic OCR Example</h1>
+        <h1 class="title">בדיקת טופס לוטו</h1>
       </ion-header-bar>
       <ion-content ng-controller="CaptureCtrl">
 
@@ -40,7 +40,10 @@
         <ion-list show-delete="false"
           show-reorder="false"
           can-swipe="true" ng-if="results">
-          
+          <div class="item item-divider">Returned Text:</div>
+          <ion-item>
+          {{returnedText}}
+          </ion-item>
           <div class="item item-divider">Your results:</div>
           <ion-item ng-repeat="result in results" ng-if="results" >
             <!-- {{$index + 1}} - {{result | filter:customArrayFilter}} -->
@@ -61,7 +64,7 @@
             </label>
           </ion-item>
           <button ng-click="checkWining(results,roundNumber)" class="button button-full button-positive">
-            Check Winning 
+            בדוק זכייה 
           </button>
           
         </div>
@@ -69,14 +72,14 @@
         <div class="padding" ng-if="showAnalyzeButton">
 
             <button ng-click="analyzeText()" class="button button-full button-positive">
-              Analyze text
+              סרוק טופס
             </button>
             <button ng-click="showActionSheet()" class="button button-full button-positive">
-              Rescan
+              טופס נוסף
             </button>
          </div>
         <button ng-if="!showAnalyzeButton" ng-click="showActionSheet()" class="button button-full button-positive">
-              Scan Card
+              סרוק טופס
         </button>
          
 

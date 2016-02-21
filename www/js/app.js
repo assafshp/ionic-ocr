@@ -45,6 +45,7 @@ angular.module('starter', ['ionic','ngCordova'])
         .then(function(imageData) {
           var image = document.getElementById('pic');
           image.src = "data:image/jpeg;base64," + imageData;
+          image.imageData = imageData;
           $scope.showAnalyzeButton = true;
         })
         .catch(function(err) {
@@ -64,10 +65,18 @@ angular.module('starter', ['ionic','ngCordova'])
       });
 
       if (isWin){
-        alert('WIN !!!!!');
+        $ionicPopup.alert({
+           title: 'Wow !!!!',
+           template: 'You Won!!!'
+         });
+        // alert('WIN !!!!!');
       }
       else{
-        alert('No luck this time, try again !');
+        // alert('No luck this time, try again !');
+        $ionicPopup.alert({
+           title: 'oops',
+           template: 'No luck this time, try again'
+         });
       }
 
     }).catch(function(err){
@@ -77,6 +86,8 @@ angular.module('starter', ['ionic','ngCordova'])
   };
 
   $scope.showActionSheet = function(){
+    // $scope.results=null;
+    $scope.returnedText='';
     var hideSheet = $ionicActionSheet.show({
       buttons: [
        { text: 'Choose Photo' },
@@ -111,15 +122,17 @@ angular.module('starter', ['ionic','ngCordova'])
 
   $scope.analyzeText = function(){
     self.showLoading();
-    TextSrv.analyze(document.getElementById("pic")).then(function(text){
+    TextSrv.analyze(document.getElementById("pic").imageData).then(function(text){
       $ionicLoading.hide();
       self.hideLoading();
       // console.log(text);
       // alert(text);
       $scope.results = text;
+      $scope.returnedText = text;
     }).catch(function(err){
       console.log('ERR:', err);
       self.hideLoading();
+      $scope.returnedText = 'N/A';
       alert('Error , try again later');
     });
 
@@ -161,7 +174,7 @@ angular.module('starter', ['ionic','ngCordova'])
         
         // set some default options
         var defaultOptions = {
-          quality: 100,
+          quality: 80,
           destinationType: Camera.DestinationType.DATA_URL,
           sourceType: sourceType,
           allowEdit: true,
@@ -208,7 +221,7 @@ angular.module('starter', ['ionic','ngCordova'])
     var j=0;
     var rows = text.split('\n');
     var results=new Array(10);
-    angular.forEach(rows, function(value, index) {
+    angular.forEach(alignRowsTable(rows), function(value, index) {
       var tableResults = [];
       if (value[value.length-1] === ')'){
         var id = value.substr(value.indexOf(')')-1,1);
@@ -231,12 +244,38 @@ angular.module('starter', ['ionic','ngCordova'])
         console.log(tableResults);
 
       }
+
       if (tableResults.length>0){
         finalResults.push(tableResults);
       }
       //finalResults.push(tableResults[tableResults.length-1]);
     });
     return finalResults;
+
+  };
+
+  function alignRowsTable(rows){
+    var fixedRows=[];
+    var prevRow='';
+    angular.forEach(rows,function(row){
+      if (row[row.length-1] === ')'){
+        if (row[row.length-2] === '1'){
+          fixedRows=[];
+          prevRow='';
+        }
+
+
+        if (prevRow.length>0){
+          row=prevRow + ' ' + row;
+          prevRow='';
+        }
+        fixedRows.push(row);
+      }
+      else{
+        prevRow=row;
+      }
+    });
+    return fixedRows;
 
   };
 
@@ -254,7 +293,8 @@ angular.module('starter', ['ionic','ngCordova'])
           "image": 
           {
             
-              "content":img.currentSrc.substr(img.currentSrc.indexOf('base64,')+7,img.currentSrc.length)
+              // "content":img.currentSrc.substr(img.currentSrc.indexOf('base64,')+7,img.currentSrc.length)
+              "content":img
               
           },
           "features": 
@@ -295,16 +335,16 @@ angular.module('starter', ['ionic','ngCordova'])
   var WinSrv={};
 
   WinSrv.getWinning = function(round){
-    var mock = { 
-      number:2765,
-      date: '16/02/16',
-      results : [ '8','14','16','20','24','30','1']
-    };
     // var mock = { 
     //   number:2765,
-    //   date: '14/02/16',
-    //   results : [ '37','28','25','12','09','01','6']
+    //   date: '16/02/16',
+    //   results : [ '8','14','16','20','24','30','1']
     // };
+    var mock = { 
+      number:2765,
+      date: '14/02/16',
+      results : [ '37','28','25','12','09','01','6']
+    };
     if (round){
       return $q.when(mock);
     }
