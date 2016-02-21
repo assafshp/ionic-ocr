@@ -41,7 +41,7 @@ angular.module('starter', ['ionic','ngCordova'])
 
     this.getPicture = function(index){
 
-      CameraSrv.getPicture()
+      CameraSrv.getPicture(index)
         .then(function(imageData) {
           var image = document.getElementById('pic');
           image.src = "data:image/jpeg;base64," + imageData;
@@ -131,7 +131,7 @@ angular.module('starter', ['ionic','ngCordova'])
 .factory('CameraSrv', ['$rootScope', '$q', '$window',function($rootScope, $q, $window) {
 
   return {
-    getPicture: function(options) {
+    getPicture: function(index,options) {
 
       var deferred = $q.defer();
 
@@ -237,6 +237,10 @@ angular.module('starter', ['ionic','ngCordova'])
       //finalResults.push(tableResults[tableResults.length-1]);
     });
     return finalResults;
+
+  };
+
+  TextSrv.getRoundNumber = function(text){
 
   };
 
